@@ -1,0 +1,60 @@
+/* Fill-in information from Blynk Device Info here */
+#define BLYNK_TEMPLATE_ID           "TMPLwiCxnErz"
+#define BLYNK_TEMPLATE_NAME         "Quickstart Device"
+#define BLYNK_AUTH_TOKEN            "4yr1nN_1MDbgXAKnUK-k6TWk5Y5hf8se"
+#define BLYNK_PRINT Serial
+#include <ESP8266WiFi.h>
+#include <BlynkSimpleEsp8266.h>
+#include <SoftwareSerial.h>
+SoftwareSerial NodeMCU(D2, D3); // Configuring a serial connection with these pins (RX, TX)
+char auth[] = "4yr1nN_1MDbgXAKnUK-k6TWk5Y5hf8se"; // Insert your own Blynk authentication token
+String content; // Variable that gets serial data
+// Your WiFi credentials.
+// Set password to "" for open networks.
+char ssid[] = "Dhruv's OnePlus 7";
+char pass[] = "djm140301";
+BlynkTimer timer; // Creating a timer object
+
+void sendValues() 
+{
+  char c;
+  content = NodeMCU.readString(); // Reading serial data
+  Serial.println(content); // I used this line to check if data is correct
+  // This is where I process the data
+  /* In Arduino code, you can see that data is sent as one string
+  which contains every value so we get those values for each sensor
+  like this */
+  String v1 = content.substring(0, 2);
+  String v2 = content.substring(2, 4);
+
+  if(v1 == "aa")v1 = "100";
+  if(v2 == "aa")v1 = "100";
+
+  // Making it prettier
+  String str1 = v1 + " %";
+  String str2 = v2 + " %";
+  
+  // Sending processed data to server and writing them to virtual pins
+  Blynk.virtualWrite(V0, str1);
+  Blynk.virtualWrite(V1, str2);
+
+}
+// Marker                                                                                                                          
+
+void setup()
+{
+  Serial.begin(19200); // Starting serial connection for debugging and checking
+  Blynk.begin(auth, ssid, pass); // Starting a connection with Blynk's server
+  delay(500); // Adding a little delay so that we can connect properly
+  timer.setInterval(1000L, sendValues); // Timer will start the "sendValues" function every second
+  NodeMCU.begin(9600); // Starting a serial communication with Arduino
+  pinMode(D2,INPUT); // Pin used as recieve (RX) pin
+  pinMode(D3,OUTPUT); // Pin used as transmit (TX) pin
+}
+
+void loop()
+{
+  Blynk.run(); //Initiates Blynk
+  timer.run(); //Initiates Timer
+}
+
