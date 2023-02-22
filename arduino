@@ -1,0 +1,46 @@
+#include <SoftwareSerial.h>
+SoftwareSerial Arduino(8, 9); // Configuring a serial connection with NodeMCU using these pins (RX, TX)
+int sens[2], i = 1, j;
+String p, prim;
+char primljen;
+int relay = 7;
+void setup() {
+Serial.begin(115200); // Starting a serial connection for debugging and checking
+Arduino.begin(9600); // Starting a serial connection with NodeMCU
+pinMode(relay, OUTPUT); 
+pinMode(4, INPUT);
+}
+//Marker
+void loop() {
+// Reading sensor values and converting them to one string
+sens[0] = analogRead(0); 
+sens[0] = map(sens[0], 0, 1023, 0, 100); // Converting them to 0-100% format
+sens[1] = analogRead(1);
+sens[1] = map(sens[1], 0, 1023, 0, 100);
+// Converting them to one string
+//I use string "p" for sending values
+String p;
+for(int j = 0; j <= 1; j++)
+{
+  if(sens[j] < 10)
+  {
+    p.concat("0");
+    p.concat(String(sens[j]));
+  }
+  else if(sens[j] == 100)
+  {
+    p.concat("aa");
+  }
+  else p.concat(String(sens[j]));
+}
+
+Arduino.println(p); // Sending them to NodeMCU
+delay(500); 
+Arduino.flush(); // Waits for transmission to be over
+
+i = digitalRead(4); // Checking if the relay should be on or off
+if(i == 0)digitalWrite(relay, LOW);
+if(i == 1)digitalWrite(relay, HIGH);
+Serial.println(i); // Used for debugging
+delay(1000);
+}
