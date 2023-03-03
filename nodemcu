@@ -11,9 +11,10 @@ char auth[] = "4yr1nN_1MDbgXAKnUK-k6TWk5Y5hf8se"; // Insert your own Blynk authe
 String content; // Variable that gets serial data
 // Your WiFi credentials.
 // Set password to "" for open networks.
-char ssid[] = "Dhruv's OnePlus 7";
-char pass[] = "djm140301";
+char ssid[] = "Harsh";
+char pass[] = "Harsh99871590";
 BlynkTimer timer; // Creating a timer object
+int pumpPin = D1; // Pin connected to the water pump
 
 void sendValues() 
 {
@@ -40,7 +41,6 @@ void sendValues()
 
 }
 // Marker                                                                                                                          
-
 void setup()
 {
   Serial.begin(19200); // Starting serial connection for debugging and checking
@@ -50,6 +50,8 @@ void setup()
   NodeMCU.begin(9600); // Starting a serial communication with Arduino
   pinMode(D2,INPUT); // Pin used as recieve (RX) pin
   pinMode(D3,OUTPUT); // Pin used as transmit (TX) pin
+  pinMode(pumpPin, OUTPUT);
+  digitalWrite(pumpPin, LOW);
 }
 
 void loop()
@@ -58,3 +60,13 @@ void loop()
   timer.run(); //Initiates Timer
 }
 
+BLYNK_WRITE(V2)
+{
+  int value = param.asInt();
+  if (value == 1) {
+    digitalWrite(pumpPin, HIGH); // Turn on the water pump
+  } else
+   {
+    digitalWrite(pumpPin, LOW); // Turn off the water pump
+  }
+}
