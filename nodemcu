@@ -3,6 +3,10 @@
 #define BLYNK_TEMPLATE_NAME         "Quickstart Device"
 #define BLYNK_AUTH_TOKEN            "4yr1nN_1MDbgXAKnUK-k6TWk5Y5hf8se"
 #define BLYNK_PRINT Serial
+#define RELAY1_PIN D1 //pump1
+#define RELAY2_PIN D7 //pump2
+#define LDR_PIN A0 //ldr
+#define VIRTUAL_PIN V4 //ldr
 #include <ESP8266WiFi.h>
 #include <BlynkSimpleEsp8266.h>
 #include <SoftwareSerial.h>
@@ -14,7 +18,6 @@ String content; // Variable that gets serial data
 char ssid[] = "Harsh";
 char pass[] = "Harsh99871590";
 BlynkTimer timer; // Creating a timer object
-int pumpPin = D1; // Pin connected to the water pump
 
 void sendValues() 
 {
@@ -50,23 +53,34 @@ void setup()
   NodeMCU.begin(9600); // Starting a serial communication with Arduino
   pinMode(D2,INPUT); // Pin used as recieve (RX) pin
   pinMode(D3,OUTPUT); // Pin used as transmit (TX) pin
-  pinMode(pumpPin, OUTPUT);
-  digitalWrite(pumpPin, LOW);
+  pinMode(RELAY1_PIN, OUTPUT); //pump1
+  pinMode(RELAY2_PIN, OUTPUT); //pump2
+  pinMode(LDR_PIN, INPUT); //ldr
+
+  digitalWrite(RELAY1_PIN, HIGH);
+  digitalWrite(RELAY2_PIN, HIGH);
 }
 
 void loop()
 {
   Blynk.run(); //Initiates Blynk
   timer.run(); //Initiates Timer
+  int ldrValue = analogRead(LDR_PIN);
+  Blynk.virtualWrite(VIRTUAL_PIN, ldrValue);
+  delay(1000);
+  
+  if (ldrValue > 1000 ) {  //ldr notification
+
+    Blynk.logEvent("ldr", "LDR value exceeded threshold");
+  }
 }
 
-BLYNK_WRITE(V2)
-{
-  int value = param.asInt();
-  if (value == 1) {
-    digitalWrite(pumpPin, HIGH); // Turn on the water pump
-  } else
-   {
-    digitalWrite(pumpPin, LOW); // Turn off the water pump
-  }
+BLYNK_WRITE(V2) {     //pump1
+  int state = param.asInt();
+  digitalWrite(RELAY1_PIN, !state);
+}
+
+BLYNK_WRITE(V3) {     //pump2
+  int state = param.asInt();
+  digitalWrite(RELAY2_PIN, !state);
 }
