@@ -7,6 +7,11 @@
 #define RELAY2_PIN D7 //pump2
 #define LDR_PIN A0 //ldr
 #define VIRTUAL_PIN V4 //ldr
+#define trigPin D5 //ultra
+#define echoPin D6 //ultra
+int distanceToBottom = 10; // distance between sensor and bottom of container in cm
+int containerHeight = 50; // height of container in cm
+
 #include <ESP8266WiFi.h>
 #include <BlynkSimpleEsp8266.h>
 #include <SoftwareSerial.h>
@@ -56,7 +61,8 @@ void setup()
   pinMode(RELAY1_PIN, OUTPUT); //pump1
   pinMode(RELAY2_PIN, OUTPUT); //pump2
   pinMode(LDR_PIN, INPUT); //ldr
-
+  pinMode(trigPin, OUTPUT); //ultra
+  pinMode(echoPin, INPUT); //ultra
   digitalWrite(RELAY1_PIN, HIGH);
   digitalWrite(RELAY2_PIN, HIGH);
 }
@@ -73,7 +79,26 @@ void loop()
 
     Blynk.logEvent("ldr", "LDR value exceeded threshold");
   }
+
+  long duration, distance;      //ul
+  digitalWrite(trigPin, LOW);   //ul
+  delayMicroseconds(2);
+  digitalWrite(trigPin, HIGH);
+  delayMicroseconds(10);
+  digitalWrite(trigPin, LOW);
+  duration = pulseIn(echoPin, HIGH);
+  distance = (duration / 2) / 29.1;
+
+  if (distance >= 2 && distance <= 400) {
+    int waterLevelHeight = distance - distanceToBottom;
+    float waterLevelPercent = (float)(waterLevelHeight) / containerHeight * 100;
+    Serial.print("Water Level: ");
+    Serial.print(waterLevelPercent);
+    Serial.println("%");
+    Blynk.virtualWrite(V5, waterLevelPercent);
+  }
 }
+
 
 BLYNK_WRITE(V2) {     //pump1
   int state = param.asInt();
